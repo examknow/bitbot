@@ -35,6 +35,9 @@ REGEX_STREET = re.compile("street([1-9]|1[0-2])$")
 REGEX_DOUBLESTREET = re.compile("2street([1-9]|1[0-1])$")
 REGEX_CORNER = re.compile("([lr])corner([1-9]|1[0-1])$")
 
+@utils.export("channelset", utils.BoolSetting("coins-prevent-highlight",
+    "Whether or not to prevent highlighting users with !richest"))
+
 class CoinParseException(Exception):
     pass
 
@@ -166,10 +169,16 @@ class Module(ModuleManager.BaseModule):
     @utils.hook("received.command.richest")
     @utils.kwarg("help", "Show the top 10 richest users")
     def richest(self, event):
-        top_10 = utils.top_10(self._all_coins(event["server"]),
-            convert_key=lambda nickname:
-            event["server"].get_user(nickname).nickname,
-            value_format=lambda value: self._coin_str_human(value))
+        if target.get_setting("coins-prevent-highlight", True):
+            top_10 = utils.top_10(self._all_coins(event["server"]),
+                convert_key=lambda nickname:
+                utils.prevent_highlight(event["server"].get_user(nickname).nickname),
+                value_format=lambda value: self._coin_str_human(value))
+        else:
+            top_10 = utils.top_10(self._all_coins(event["server"]),
+                convert_key=lambda nickname:
+                utils.prevent_highlight(event["server"].get_user(nickname).nickname),
+                value_format=lambda value: self._coin_str_human(value))
         event["stdout"].write("Richest users: %s" % ", ".join(top_10))
 
     def _redeem_cache(self, server, user):

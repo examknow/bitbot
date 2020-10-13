@@ -32,6 +32,11 @@ So, we have the command ready, but we don't make it do anything. Let's fix that.
     def doot(self, event):
         event["stdout"].write("doot doot")
 
+Now let's try it
+
+    <me> mybot: doot
+    <mybot> [Sample] doot doot
+
 And there we have it! Now we have a dooting bot.
 
 ## Full code
